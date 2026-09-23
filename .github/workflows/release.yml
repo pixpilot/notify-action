@@ -48,3 +48,29 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+  notify:
+    name: Notify Telegram
+    needs: release
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout notification action
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Report release outcome
+        uses: ./
+        with:
+          status: >-
+            ${{ github.event.workflow_run.conclusion == 'success' && needs.release.result || github.event.workflow_run.conclusion }}
+          notify-on: any
+          message: >-
+            CI: ${{ github.event.workflow_run.conclusion }};
+            release job: ${{ needs.release.result }}.
+            Source CI run: ${{ github.event.workflow_run.html_url }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
