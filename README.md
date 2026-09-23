@@ -1,294 +1,154 @@
-# Create a TypeScript Action
+# Notify Action
 
-> **Note:** This project is a fork of
-> [actions/javascript-action](https://github.com/actions/javascript-action),
-> rewritten and maintained in TypeScript for improved type safety and developer
-> experience.
+Report a workflow's outcome to Telegram and/or email.
 
-[![GitHub Super-Linter](https://github.com/pixpilot/github-action-template/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
-![CI](https://github.com/pixpilot/github-action-template/actions/workflows/ci.yml/badge.svg)
+By default it only fires for `failure` and `cancelled`, so you can drop it into a
+job with `if: always()` and it stays quiet while the pipeline is green.
 
-Use this template to bootstrap the creation of a TypeScript action. :rocket:
-
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
-
-If you are new, there's also a simpler introduction in the
-[Hello world TypeScript action repository](https://github.com/actions/hello-world-javascript-action).
-
-## 🚀 Getting Started
-
-Run setup after cloning:
-
-```sh
-pnpm run setup
-```
-
-This is a one-time step. Until it has run, `pnpm install` prints a reminder and
-`git commit` is blocked. Setup ends by deleting the `setup/` folder, so the gate
-removes itself. It is skipped in CI, in this template repo itself, and with
-`SKIP_SETUP_CHECK=1`.
-
-## Create Your Own Action
-
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
-
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
-
-> [!IMPORTANT]
->
-> Make sure to remove or update the [`CODEOWNERS`](./CODEOWNERS) file! For
-> details on how to use this file, see
-> [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
-
-## Initial Setup
-
-After you've cloned the repository to your local machine or codespace, you'll
-need to perform some initial setup steps before you can develop your action.
-
-> [!NOTE]
->
-> You'll need to have a reasonably modern version of
-> [Node.js](https://nodejs.org) handy. If you are using a version manager like
-> [`nodenv`](https://github.com/nodenv/nodenv) or
-> [`nvm`](https://github.com/nvm-sh/nvm), you can run `nodenv install` in the
-> root of your repository to install the version specified in
-> [`package.json`](./package.json). Otherwise, 20.x or later should work!
-
-1. :hammer_and_wrench: Install the dependencies
-
-   ```bash
-   npm install
-   ```
-
-1. :building_construction: Package the TypeScript for distribution
-
-   ```bash
-   npm run bundle
-   ```
-
-1. :white_check_mark: Run the tests
-
-   ```bash
-   $ npm test
-
-   PASS  ./index.test.js
-     ✓ throws invalid number (3ms)
-     ✓ wait 500 ms (504ms)
-     ✓ test runs (95ms)
-
-   ...
-   ```
-
-## Update the Action Metadata
-
-The [`action.yml`](action.yml) file defines metadata about your action, such as
-input(s) and output(s). For details about this file, see
-[Metadata syntax for GitHub Actions](https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions).
-
-When you copy this repository, update `action.yml` with the name, description,
-inputs, and outputs for your action.
-
-## Update the Action Code
-
-The [`src/`](./src/) directory is the heart of your action! This contains the
-source code that will be run when your action is invoked. You can replace the
-contents of this directory with your own code.
-
-There are a few things to keep in mind when writing your action code:
-
-- Most GitHub Actions toolkit and CI/CD operations are processed asynchronously.
-  In `main.js`, you will see that the action is run in an `async` function.
-
-  ```typescript
-  import * as core from '@actions/core';
-  // ...
-
-  async function run() {
-    try {
-      // ...
-    } catch (error) {
-      core.setFailed((error as Error).message);
-    }
-  }
-  ```
-
-  For more information about the GitHub Actions toolkit, see the
-  [documentation](https://github.com/actions/toolkit/blob/main/README.md).
-
-So, what are you waiting for? Go ahead and start customizing your action!
-
-1. Create a new branch
-
-   ```bash
-   git checkout -b releases/v1
-   ```
-
-1. Replace the contents of `src/` with your action code
-1. Add tests to `__tests__/` for your source code
-1. Format, test, and build the action
-
-   ```bash
-   npm run all
-   ```
-
-   > This step is important! It will run [`ncc`](https://github.com/vercel/ncc)
-   > to build the final TypeScript action code with all dependencies included.
-   > If you do not run this step, your action will not work correctly when it is
-   > used in a workflow. This step also includes the `--license` option for
-   > `ncc`, which will create a license file for all of the production node
-   > modules used in your project.
-
-1. (Optional) Test your action locally
-
-   The [`@github/local-action`](https://github.com/github/local-action) utility
-   can be used to test your action locally. It is a simple command-line tool
-   that "stubs" (or simulates) the GitHub Actions Toolkit. This way, you can run
-   your TypeScript action locally without having to commit and push your changes
-   to a repository.
-
-   The `local-action` utility can be run in the following ways:
-   - Visual Studio Code Debugger
-
-     Make sure to review and, if needed, update
-     [`.vscode/launch.json`](./.vscode/launch.json)
-
-   - Terminal/Command Prompt
-
-     ```bash
-     # npx @github/local action <action-yaml-path> <entrypoint> <dotenv-file>
-     npx @github/local-action . src/main.js .env
-     ```
-
-   You can provide a `.env` file to the `local-action` CLI to set environment
-   variables used by the GitHub Actions Toolkit. For example, setting inputs and
-   event payload data used by your action. For more information, see the example
-   file, [`.env.example`](./.env.example), and the
-   [GitHub Actions Documentation](https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables).
-
-1. Commit your changes
-
-   ```bash
-   git add .
-   git commit -m "My first action is ready!"
-   ```
-
-1. Push them to your repository
-
-   ```bash
-   git push -u origin releases/v1
-   ```
-
-1. Create a pull request and get feedback on your action
-1. Merge the pull request into the `main` branch
-
-Your action is now published! :rocket:
-
-For information about versioning your action, see
-[Versioning](https://github.com/actions/toolkit/blob/main/docs/action-versioning.md)
-in the GitHub Actions toolkit.
-
-## Validate the Action
-
-You can now validate the action by referencing it in a workflow file. For
-example, [`ci.yml`](./.github/workflows/ci.yml) demonstrates how to reference an
-action in the same repository.
-
-```yaml
-steps:
-  - name: Checkout
-    id: checkout
-    uses: actions/checkout@v3
-
-  - name: Test Local Action
-    id: test-action
-    uses: ./
-    with:
-      milliseconds: 1000
-
-  - name: Print Output
-    id: output
-    run: echo "${{ steps.test-action.outputs.time }}"
-```
-
-For example workflow runs, check out the
-[Actions tab](https://github.com/pixpilot/github-action-template/actions)!
-:rocket:
+A channel is used when its credentials are set and skipped when they are not, so
+one step can cover both. **A notification that cannot be delivered does not fail
+your build** — it logs a warning and carries on, unless you opt in with
+`fail-on-error`. A broken alerting channel should not bury the failure it was
+reporting.
 
 ## Usage
 
-After testing, you can create version tag(s) that developers can use to
-reference different stable versions of your action. For more information, see
-[Versioning](https://github.com/actions/toolkit/blob/main/docs/action-versioning.md)
-in the GitHub Actions toolkit.
-
-To include the action in a workflow in another repository, you can use the
-`uses` syntax with the `@` symbol to reference a specific branch, tag, or commit
-hash.
+### As the last step of a job
 
 ```yaml
-steps:
-  - name: Checkout
-    id: checkout
-    uses: actions/checkout@v4
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pnpm test
 
-  - name: Run my Action
-    id: run-action
-    uses: pixpilot/github-action-template@v1 # Commit with the `v1` tag
-    with:
-      milliseconds: 1000
-
-  - name: Print Output
-    id: output
-    run: echo "${{ steps.run-action.outputs.time }}"
+      - uses: pixpilot/notify-action@v1
+        if: always()
+        with:
+          status: ${{ job.status }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
 ```
 
-## Dependency License Management
+`status` defaults to `failure`, so pass `${{ job.status }}` whenever you guard the
+step with `if: always()`.
 
-This template includes a GitHub Actions workflow,
-[`licensed.yml`](./.github/workflows/licensed.yml), that uses
-[Licensed](https://github.com/licensee/licensed) to check for dependencies with
-missing or non-compliant licenses. This workflow is initially disabled. To
-enable the workflow, follow the below steps.
+### As a job watching every other job
 
-1. Open [`licensed.yml`](./.github/workflows/licensed.yml)
-1. Uncomment the following lines:
+This also catches a job that died before it could reach its own notify step.
 
-   ```yaml
-   # pull_request:
-   #   branches:
-   #     - main
-   # push:
-   #   branches:
-   #     - main
-   ```
+```yaml
+jobs:
+  build: ...
+  test: ...
 
-1. Save and commit the changes
-
-Once complete, this workflow will run any time a pull request is created or
-changes pushed directly to `main`. If the workflow detects any dependencies with
-missing or non-compliant licenses, it will fail the workflow and provide details
-on the issue(s) found.
-
-### Updating Licenses
-
-Whenever you install or update dependencies, you can use the Licensed CLI to
-update the licenses database. To install Licensed, see the project's
-[Readme](https://github.com/licensee/licensed?tab=readme-ov-file#installation).
-
-To update the cached licenses, run the following command:
-
-```bash
-licensed cache
+  notify:
+    needs: [build, test]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pixpilot/notify-action@v1
+        with:
+          status: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}
+          email-to: team-alerts@example.com
+          email-from: GitHub Actions
+          smtp-server: smtp.gmail.com
+          smtp-username: ${{ secrets.MAIL_USER }}
+          smtp-password: ${{ secrets.MAIL_PASS }}
 ```
 
-To check the status of cached licenses, run the following command:
+### As a reusable workflow
 
-```bash
-licensed status
+Wrap it once in a central `.github` repository so consumer repositories never
+repeat the secrets:
+
+```yaml
+# .github/workflows/notify.yml
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pixpilot/notify-action@v1
+        with:
+          status: ${{ inputs.status }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
 ```
+
+## Inputs
+
+| Input           | Default              | Description                                                                                       |
+| --------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
+| `status`        | `failure`            | Outcome to report. Pass `job.status` or a value derived from `needs.*.result`.                    |
+| `notify-on`     | `failure, cancelled` | Statuses that trigger a notification, comma- or space-separated. `any` notifies on every outcome. |
+| `title`         | generated            | Overrides the one-line title, which is also the email subject.                                    |
+| `message`       | —                    | Extra text appended to the body.                                                                  |
+| `fail-on-error` | `false`              | Fail the step when a channel cannot deliver.                                                      |
+
+### Telegram
+
+Skipped unless both `telegram-bot-token` and `telegram-chat-id` are set.
+
+| Input                | Description                                                   |
+| -------------------- | ------------------------------------------------------------- |
+| `telegram-bot-token` | Bot token from [@BotFather](https://t.me/botfather).          |
+| `telegram-chat-id`   | `123456789`, `-1001234567890` for a group, or `@channelname`. |
+| `telegram-thread-id` | `message_thread_id`, for groups with topics enabled.          |
+
+To find the chat id: message the bot (or add it to the group as an admin), then
+read it from `https://api.telegram.org/bot<token>/getUpdates`.
+
+### Email
+
+Skipped unless both `smtp-server` and `email-to` are set.
+
+| Input           | Default  | Description                                                                                                  |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
+| `smtp-server`   | —        | SMTP host, for example `smtp.gmail.com`.                                                                     |
+| `email-to`      | —        | Recipients, comma- or space-separated.                                                                       |
+| `email-from`    | username | `Name <addr@example.com>`, a bare address, or a display name alone (the username then supplies the address). |
+| `smtp-port`     | `465`    | `465` means implicit TLS, anything else STARTTLS.                                                            |
+| `smtp-username` | —        | Leave empty for a relay that does not authenticate.                                                          |
+| `smtp-password` | —        | Required whenever `smtp-username` is set.                                                                    |
+| `smtp-secure`   | `auto`   | `auto`, `true` (implicit TLS), `false` (STARTTLS) or `none` (unencrypted internal relay).                    |
+
+**Gmail** rejects account passwords over SMTP. Enable 2FA, create an
+[App Password](https://myaccount.google.com/apppasswords), and use port 465 with
+the account address as `smtp-username`. Gmail rewrites the envelope sender to the
+authenticated account whatever `email-from` says.
+
+## Outputs
+
+| Output            | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `notified`        | `true` when at least one channel accepted the notification.   |
+| `channels`        | Comma-separated channels that delivered successfully.         |
+| `failed-channels` | Comma-separated channels that were configured but failed.     |
+| `status`          | The normalised status that was evaluated against `notify-on`. |
+
+## Development
+
+```sh
+pnpm install
+pnpm test       # unit tests, plus integration tests against a local SMTP/HTTP server
+pnpm check:all  # format, lint, typecheck, test
+pnpm build      # bundle to dist/, which is what the action actually runs
+```
+
+`dist/` is committed and is what consumers execute, so rebuild it whenever `src/`
+changes.
+
+Adding a channel means one module under `src/channels/` implementing the
+`Channel` interface, and one branch in `createChannels`.
+
+## License
+
+[MIT](LICENSE)

@@ -1,23 +1,105 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: Pixpilot Notify
+description: Report a workflow's outcome to Telegram and/or email, without failing the build
+author: Pixpilot
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: bell
+  color: orange
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
+  status:
+    description: >-
+      Outcome to report - pass the `job.status` context, or a value derived from
+      `needs.*.result`. Compared case-insensitively against `notify-on`.
+    required: false
+    default: failure
 
-# Define your outputs here.
+  notify-on:
+    description: >-
+      Statuses that trigger a notification, separated by commas or spaces. Use
+      `any` to notify on every outcome.
+    required: false
+    default: 'failure, cancelled'
+
+  title:
+    description: Overrides the generated one-line title, which is also the email subject.
+    required: false
+
+  message:
+    description: Extra text appended to the generated body.
+    required: false
+
+  fail-on-error:
+    description: >-
+      Fail the step when a channel cannot deliver. Defaults to `false`, so a
+      broken alerting channel never masks the failure it was reporting.
+    required: false
+    default: 'false'
+
+  # --- Telegram ----------------------------------------------------------------------
+  telegram-bot-token:
+    description: Telegram bot token from @BotFather. Telegram is skipped when empty.
+    required: false
+
+  telegram-chat-id:
+    description: >-
+      Target chat id, for example `123456789`, `-1001234567890` for a group, or
+      `@channelname`. Telegram is skipped when empty.
+    required: false
+
+  telegram-thread-id:
+    description: Topic id (`message_thread_id`) when the group has topics enabled.
+    required: false
+
+  # --- Email -------------------------------------------------------------------------
+  email-to:
+    description: Recipients, separated by commas or spaces. Email is skipped when empty.
+    required: false
+
+  email-from:
+    description: >-
+      Sender. Accepts `Name <addr@example.com>`, a bare address, or a display
+      name on its own such as `GitHub Actions`, in which case `smtp-username`
+      supplies the address. Defaults to `smtp-username`.
+    required: false
+
+  smtp-server:
+    description: SMTP host, for example `smtp.gmail.com`. Email is skipped when empty.
+    required: false
+
+  smtp-port:
+    description: SMTP port. `465` means implicit TLS, anything else STARTTLS.
+    required: false
+    default: '465'
+
+  smtp-username:
+    description: SMTP username. Leave empty for a relay that does not authenticate.
+    required: false
+
+  smtp-password:
+    description: SMTP password, or app password where the provider requires one.
+    required: false
+
+  smtp-secure:
+    description: >-
+      Transport security: `auto` (implicit TLS on port 465, STARTTLS
+      otherwise), `true` to force implicit TLS, `false` to force STARTTLS, or
+      `none` for an unencrypted internal relay.
+    required: false
+    default: auto
+
 outputs:
-  time:
-    description: Your output description here
+  notified:
+    description: '`true` when at least one channel accepted the notification.'
+
+  channels:
+    description: Comma-separated channels that delivered successfully.
+
+  failed-channels:
+    description: Comma-separated channels that were configured but failed to deliver.
+
+  status:
+    description: The normalised status that was evaluated against `notify-on`.
 
 runs:
   using: node24

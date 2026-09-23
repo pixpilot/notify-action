@@ -1,12 +1,26 @@
+import process from 'node:process';
+
 import * as core from '@actions/core';
 
-import { wait } from './wait';
+import { createChannels, dispatch } from './dispatch';
+import { readInputs } from './inputs';
+import { buildPayload, readWorkflowContext } from './payload';
+import { normaliseStatus, shouldNotify } from './status';
 
-/**
- * The main function for the action.
- *
- * @returns {Promise<void>} Resolves when the action is complete.
- */
+interface Outputs {
+  notified: boolean;
+  channels: string[];
+  failed: string[];
+  status: string;
+}
+
+function setOutputs(outputs: Outputs): void {
+  core.setOutput('notified', String(outputs.notified));
+  core.setOutput('channels', outputs.channels.join(','));
+  core.setOutput('failed-channels', outputs.failed.join(','));
+  core.setOutput('status', outputs.status);
+}
+
 /**
  * The main function for the action.
  *
@@ -14,30 +28,60 @@ import { wait } from './wait';
  */
 export async function run(): Promise<void> {
   try {
-    const ms = core.getInput('milliseconds');
+    const inputs = readInputs((name) => core.getInput(name));
+    const status = normaliseStatus(inputs.status);
 
-    // Log info about the action starting
-    core.info(`Starting GitHub Action with ${ms} milliseconds wait time`);
+    if (!shouldNotify(status, inputs.notifyOn)) {
+      core.info(
+        `Status "${status}" is not in "${inputs.notifyOn.join(', ')}", nothing to notify.`,
+      );
+      setOutputs({ notified: false, channels: [], failed: [], status });
+      return;
+    }
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`);
+    const channels = createChannels(inputs);
+    if (channels.length === 0) {
+      core.warning(
+        'No notification channel is configured. Set `telegram-bot-token` and `telegram-chat-id`, and/or `smtp-server` and `email-to`.',
+      );
+      setOutputs({ notified: false, channels: [], failed: [], status });
+      return;
+    }
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString());
-    await wait(Number.parseInt(ms, 10));
-    core.debug(new Date().toTimeString());
+    const payload = buildPayload({
+      status,
+      context: readWorkflowContext(process.env),
+      title: inputs.title,
+      message: inputs.message,
+    });
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString());
+    const report = await dispatch(channels, payload);
 
-    // Log completion
-    core.info('GitHub Action completed successfully');
+    for (const channel of report.delivered) {
+      core.info(`Notification delivered via ${channel}.`);
+    }
+
+    for (const failure of report.failed) {
+      // Only a warning unless the caller opted in: the run being reported on
+      // matters more than the reporting, so a broken channel should not bury it.
+      const detail = `${failure.channel} notification failed: ${failure.error}`;
+      if (inputs.failOnError) core.error(detail);
+      else core.warning(detail);
+    }
+
+    setOutputs({
+      notified: report.delivered.length > 0,
+      channels: report.delivered,
+      failed: report.failed.map((failure) => failure.channel),
+      status,
+    });
+
+    if (inputs.failOnError && report.failed.length > 0) {
+      const names = report.failed.map((failure) => failure.channel).join(', ');
+      core.setFailed(`Failed to notify via: ${names}.`);
+    }
   } catch (error) {
-    // Log the error for debugging
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    core.error(`Action failed: ${errorMessage}`);
-
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    core.setFailed(message);
   }
 }

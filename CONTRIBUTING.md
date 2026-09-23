@@ -1,4 +1,4 @@
-# Contributing to <projectName>
+# Contributing to Notify Action
 
 Thank you for your interest in contributing! 🎉
 
