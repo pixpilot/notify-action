@@ -67,7 +67,7 @@ jobs:
         with:
           status: >-
             ${{ github.event.workflow_run.conclusion == 'success' && needs.release.result || github.event.workflow_run.conclusion }}
-          notify-on: any
+          notify-on: failure
           message: >-
             CI: ${{ github.event.workflow_run.conclusion }};
             release job: ${{ needs.release.result }}.
