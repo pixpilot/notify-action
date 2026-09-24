@@ -50,6 +50,11 @@ export function buildRunUrl(context: WorkflowContext): string {
   return `${context.serverUrl}/${context.repository}/actions/runs/${context.runId}/attempts/${context.runAttempt}`;
 }
 
+export function buildActionsUrl(context: WorkflowContext): string {
+  if (context.repository.length === 0) return '';
+  return `${context.serverUrl}/${context.repository}/actions`;
+}
+
 export interface BuildPayloadOptions {
   status: string;
   context: WorkflowContext;
@@ -92,6 +97,7 @@ export function buildPayload(options: BuildPayloadOptions): NotificationPayload 
     title: title !== undefined && title.length > 0 ? title : generatedTitle,
     fields: candidateFields.filter((field) => field.value.length > 0),
     runUrl: buildRunUrl(context),
+    actionsUrl: buildActionsUrl(context),
     ...(message !== undefined && message.length > 0 ? { message } : {}),
   };
 }

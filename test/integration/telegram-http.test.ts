@@ -70,6 +70,7 @@ const payload: NotificationPayload = {
   title: 'CI failed on main (pixpilot/notify-action)',
   fields: [{ label: 'Repository', value: 'pixpilot/notify-action' }],
   runUrl: 'https://github.com/pixpilot/notify-action/actions/runs/42/attempts/1',
+  actionsUrl: 'https://github.com/pixpilot/notify-action/actions',
 };
 
 /**
@@ -125,6 +126,20 @@ describe('telegramChannel over a real HTTP server', () => {
     expect(text).toContain('a &amp; b &lt;c&gt; 100% ✅');
     expect(text).toContain('second line');
     expect(text).toContain('<pre>');
+  });
+
+  it('should send the link buttons as json reply markup', async () => {
+    server = await startServer(ok);
+
+    await channelPointedAt(server.origin).send(payload);
+
+    const markup = JSON.parse(server.received[0]?.params.get('reply_markup') ?? '') as {
+      inline_keyboard: { url: string }[][];
+    };
+    expect(markup.inline_keyboard[0]?.map((button) => button.url)).toEqual([
+      payload.runUrl,
+      payload.actionsUrl,
+    ]);
   });
 
   it('should send the chat id and thread id', async () => {

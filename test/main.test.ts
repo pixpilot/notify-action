@@ -60,7 +60,11 @@ describe('main.ts', () => {
 
   describe('when the status is not one to notify on', () => {
     it('should do nothing and report that it did not notify', async () => {
-      withInputs({ ...telegramInputs, status: 'success' });
+      withInputs({
+        ...telegramInputs,
+        status: 'success',
+        'notify-on': 'failure, cancelled',
+      });
 
       await run();
 
@@ -76,8 +80,8 @@ describe('main.ts', () => {
       );
     });
 
-    it('should notify anyway when notify-on is any', async () => {
-      withInputs({ ...telegramInputs, status: 'success', 'notify-on': 'any' });
+    it('should notify on every outcome by default', async () => {
+      withInputs({ ...telegramInputs, status: 'success' });
 
       await run();
 

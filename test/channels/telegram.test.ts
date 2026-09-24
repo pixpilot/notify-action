@@ -4,6 +4,7 @@ import type { NotificationPayload } from '../../src/types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  buildInlineKeyboard,
   escapeHtml,
   renderTelegramMessage,
   TelegramChannel,
@@ -19,6 +20,7 @@ function makePayload(overrides: Partial<NotificationPayload> = {}): Notification
       { label: 'Status', value: 'failure' },
     ],
     runUrl: 'https://github.com/pixpilot/notify-action/actions/runs/42/attempts/1',
+    actionsUrl: 'https://github.com/pixpilot/notify-action/actions',
     ...overrides,
   };
 }
@@ -88,6 +90,44 @@ describe('renderTelegramMessage', () => {
   });
 });
 
+describe('buildInlineKeyboard', () => {
+  it('should link to the run and the repository actions in one row', () => {
+    expect(buildInlineKeyboard(makePayload())).toEqual({
+      inline_keyboard: [
+        [
+          {
+            text: '🔎 View run',
+            url: 'https://github.com/pixpilot/notify-action/actions/runs/42/attempts/1',
+          },
+          {
+            text: '⚙️ Repo actions',
+            url: 'https://github.com/pixpilot/notify-action/actions',
+          },
+        ],
+      ],
+    });
+  });
+
+  it('should drop a button that has no url', () => {
+    const keyboard = buildInlineKeyboard(makePayload({ runUrl: '' }));
+
+    expect(keyboard?.inline_keyboard).toEqual([
+      [
+        {
+          text: '⚙️ Repo actions',
+          url: 'https://github.com/pixpilot/notify-action/actions',
+        },
+      ],
+    ]);
+  });
+
+  it('should return undefined when there is nothing to link to', () => {
+    expect(
+      buildInlineKeyboard(makePayload({ runUrl: '', actionsUrl: '' })),
+    ).toBeUndefined();
+  });
+});
+
 describe('telegramChannel', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
@@ -127,6 +167,29 @@ describe('telegramChannel', () => {
     expect(body.get('parse_mode')).toBe('HTML');
     expect(body.get('disable_web_page_preview')).toBe('true');
     expect(body.get('text')).toBe(renderTelegramMessage(payload));
+  });
+
+  it('should attach the link buttons as reply markup', async () => {
+    const payload = makePayload();
+    await channel().send(payload);
+
+    const body = new URLSearchParams(
+      (fetchMock.mock.calls[0]?.[1] as { body: string }).body,
+    );
+
+    expect(JSON.parse(body.get('reply_markup') ?? '')).toEqual(
+      buildInlineKeyboard(payload),
+    );
+  });
+
+  it('should omit the reply markup when there are no links', async () => {
+    await channel().send(makePayload({ runUrl: '', actionsUrl: '' }));
+
+    const body = new URLSearchParams(
+      (fetchMock.mock.calls[0]?.[1] as { body: string }).body,
+    );
+
+    expect(body.has('reply_markup')).toBe(false);
   });
 
   it('should include the thread id only when configured', async () => {

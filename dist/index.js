@@ -30871,6 +30871,10 @@ function buildRunUrl(context) {
   if (context.repository.length === 0 || context.runId.length === 0) return "";
   return `${context.serverUrl}/${context.repository}/actions/runs/${context.runId}/attempts/${context.runAttempt}`;
 }
+function buildActionsUrl(context) {
+  if (context.repository.length === 0) return "";
+  return `${context.serverUrl}/${context.repository}/actions`;
+}
 function buildPayload(options) {
   const { status, context, title, message } = options;
   const { verb, emoji } = describeStatus(status);
@@ -30893,6 +30897,7 @@ function buildPayload(options) {
     title: title !== void 0 && title.length > 0 ? title : generatedTitle,
     fields: candidateFields.filter((field) => field.value.length > 0),
     runUrl: buildRunUrl(context),
+    actionsUrl: buildActionsUrl(context),
     ...message !== void 0 && message.length > 0 ? { message } : {}
   };
 }
@@ -31001,6 +31006,13 @@ function renderTelegramMessage(payload) {
   const overflow = full.length - MAX_MESSAGE_LENGTH + TRUNCATION_NOTICE.length;
   return wrap3(body.slice(0, Math.max(0, body.length - overflow)) + TRUNCATION_NOTICE);
 }
+function buildInlineKeyboard(payload) {
+  const buttons = [
+    { text: "\u{1F50E} View run", url: payload.runUrl },
+    { text: "\u2699\uFE0F Repo actions", url: payload.actionsUrl }
+  ].filter((button) => button.url.length > 0);
+  return buttons.length > 0 ? { inline_keyboard: [buttons] } : void 0;
+}
 var TelegramChannel = class {
   name = "telegram";
   config;
@@ -31018,6 +31030,10 @@ var TelegramChannel = class {
     });
     if (this.config.threadId !== void 0 && this.config.threadId.length > 0) {
       body.set("message_thread_id", this.config.threadId);
+    }
+    const keyboard = buildInlineKeyboard(payload);
+    if (keyboard !== void 0) {
+      body.set("reply_markup", JSON.stringify(keyboard));
     }
     const response = await this.fetchImpl(
       `https://api.telegram.org/bot${this.config.botToken}/sendMessage`,
@@ -31138,7 +31154,7 @@ function readInputs(get) {
   const notifyOn = parseList(get("notify-on"));
   return {
     status: get("status"),
-    notifyOn: notifyOn.length > 0 ? notifyOn : ["failure", "cancelled"],
+    notifyOn: notifyOn.length > 0 ? notifyOn : ["any"],
     title: get("title"),
     message: get("message"),
     failOnError: get("fail-on-error").trim().toLowerCase() === "true",

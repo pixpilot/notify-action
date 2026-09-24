@@ -91,6 +91,7 @@ const payload: NotificationPayload = {
     { label: 'Status', value: 'failure' },
   ],
   runUrl: 'https://github.com/pixpilot/notify-action/actions/runs/42/attempts/1',
+  actionsUrl: 'https://github.com/pixpilot/notify-action/actions',
   message: 'Deploy step exited 1',
 };
 

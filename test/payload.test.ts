@@ -3,6 +3,7 @@ import type { WorkflowContext } from '../src/payload';
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildActionsUrl,
   buildPayload,
   buildRunUrl,
   readWorkflowContext,
@@ -82,6 +83,24 @@ describe('buildRunUrl', () => {
   it('should return an empty string when there is no run to link to', () => {
     expect(buildRunUrl({ ...context, runId: '' })).toBe('');
     expect(buildRunUrl({ ...context, repository: '' })).toBe('');
+  });
+});
+
+describe('buildActionsUrl', () => {
+  it('should link to the repository actions tab', () => {
+    expect(buildActionsUrl(context)).toBe(
+      'https://github.com/pixpilot/notify-action/actions',
+    );
+  });
+
+  it('should honour a GitHub Enterprise server url', () => {
+    expect(buildActionsUrl({ ...context, serverUrl: 'https://ghe.example.com' })).toBe(
+      'https://ghe.example.com/pixpilot/notify-action/actions',
+    );
+  });
+
+  it('should return an empty string when there is no repository', () => {
+    expect(buildActionsUrl({ ...context, repository: '' })).toBe('');
   });
 });
 

@@ -16,10 +16,10 @@ inputs:
 
   notify-on:
     description: >-
-      Statuses that trigger a notification, separated by commas or spaces. Use
-      `any` to notify on every outcome.
+      Statuses that trigger a notification, separated by commas or spaces, for
+      example `failure, cancelled`. `any` notifies on every outcome.
     required: false
-    default: 'failure, cancelled'
+    default: any
 
   title:
     description: Overrides the generated one-line title, which is also the email subject.

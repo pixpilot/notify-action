@@ -91,7 +91,7 @@ export function readInputs(get: InputReader): ActionInputs {
 
   return {
     status: get('status'),
-    notifyOn: notifyOn.length > 0 ? notifyOn : ['failure', 'cancelled'],
+    notifyOn: notifyOn.length > 0 ? notifyOn : ['any'],
     title: get('title'),
     message: get('message'),
     failOnError: get('fail-on-error').trim().toLowerCase() === 'true',

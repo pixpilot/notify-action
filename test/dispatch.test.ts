@@ -11,6 +11,7 @@ const payload: NotificationPayload = {
   title: 'CI failed',
   fields: [],
   runUrl: '',
+  actionsUrl: '',
 };
 
 function baseInputs(overrides: Partial<ActionInputs> = {}): ActionInputs {

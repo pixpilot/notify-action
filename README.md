@@ -2,8 +2,8 @@
 
 Report a workflow's outcome to Telegram and/or email.
 
-By default it only fires for `failure` and `cancelled`, so you can drop it into a
-job with `if: always()` and it stays quiet while the pipeline is green.
+By default it fires for every outcome, success included. Set
+`notify-on: failure, cancelled` to stay quiet while the pipeline is green.
 
 A channel is used when its credentials are set and skipped when they are not, so
 one step can cover both. **A notification that cannot be delivered does not fail
@@ -85,13 +85,13 @@ jobs:
 
 ## Inputs
 
-| Input           | Default              | Description                                                                                       |
-| --------------- | -------------------- | ------------------------------------------------------------------------------------------------- |
-| `status`        | `failure`            | Outcome to report. Pass `job.status` or a value derived from `needs.*.result`.                    |
-| `notify-on`     | `failure, cancelled` | Statuses that trigger a notification, comma- or space-separated. `any` notifies on every outcome. |
-| `title`         | generated            | Overrides the one-line title, which is also the email subject.                                    |
-| `message`       | —                    | Extra text appended to the body.                                                                  |
-| `fail-on-error` | `false`              | Fail the step when a channel cannot deliver.                                                      |
+| Input           | Default   | Description                                                                                                                         |
+| --------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `status`        | `failure` | Outcome to report. Pass `job.status` or a value derived from `needs.*.result`.                                                      |
+| `notify-on`     | `any`     | Statuses that trigger a notification, comma- or space-separated, for example `failure, cancelled`. `any` notifies on every outcome. |
+| `title`         | generated | Overrides the one-line title, which is also the email subject.                                                                      |
+| `message`       | —         | Extra text appended to the body.                                                                                                    |
+| `fail-on-error` | `false`   | Fail the step when a channel cannot deliver.                                                                                        |
 
 ### Telegram
 
@@ -102,6 +102,9 @@ Skipped unless both `telegram-bot-token` and `telegram-chat-id` are set.
 | `telegram-bot-token` | Bot token from [@BotFather](https://t.me/botfather).          |
 | `telegram-chat-id`   | `123456789`, `-1001234567890` for a group, or `@channelname`. |
 | `telegram-thread-id` | `message_thread_id`, for groups with topics enabled.          |
+
+Each message carries two link buttons: **View run** opens the workflow run, and
+**Repo actions** opens the repository's Actions tab.
 
 To find the chat id: message the bot (or add it to the group as an admin), then
 read it from `https://api.telegram.org/bot<token>/getUpdates`.

@@ -13,6 +13,7 @@ const payload: NotificationPayload = {
   title: 'CI failed on main (pixpilot/notify-action)',
   fields: [{ label: 'Repository', value: 'pixpilot/notify-action' }],
   runUrl: 'https://github.com/pixpilot/notify-action/actions/runs/42/attempts/1',
+  actionsUrl: 'https://github.com/pixpilot/notify-action/actions',
 };
 
 const config: EmailConfig = {

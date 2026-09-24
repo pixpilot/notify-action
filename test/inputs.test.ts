@@ -24,8 +24,8 @@ const emailInputs = {
 
 describe('readInputs', () => {
   describe('defaults', () => {
-    it('should default notify-on to failure and cancelled', () => {
-      expect(readInputs(reader()).notifyOn).toEqual(['failure', 'cancelled']);
+    it('should default notify-on to any', () => {
+      expect(readInputs(reader()).notifyOn).toEqual(['any']);
     });
 
     it('should keep an explicit notify-on list', () => {

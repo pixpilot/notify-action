@@ -39,6 +39,31 @@ export function renderTelegramMessage(payload: NotificationPayload): string {
   return wrap(body.slice(0, Math.max(0, body.length - overflow)) + TRUNCATION_NOTICE);
 }
 
+export interface InlineKeyboardButton {
+  text: string;
+  url: string;
+}
+
+export interface InlineKeyboardMarkup {
+  inline_keyboard: InlineKeyboardButton[][];
+}
+
+/**
+ * Builds a single row of link buttons under the message. Buttons without a
+ * URL are dropped, and `undefined` is returned when none remain, because
+ * Telegram rejects an empty keyboard.
+ */
+export function buildInlineKeyboard(
+  payload: NotificationPayload,
+): InlineKeyboardMarkup | undefined {
+  const buttons = [
+    { text: '🔎 View run', url: payload.runUrl },
+    { text: '⚙️ Repo actions', url: payload.actionsUrl },
+  ].filter((button) => button.url.length > 0);
+
+  return buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+}
+
 interface TelegramApiResponse {
   ok?: boolean;
   description?: string;
@@ -70,6 +95,11 @@ export class TelegramChannel implements Channel {
 
     if (this.config.threadId !== undefined && this.config.threadId.length > 0) {
       body.set('message_thread_id', this.config.threadId);
+    }
+
+    const keyboard = buildInlineKeyboard(payload);
+    if (keyboard !== undefined) {
+      body.set('reply_markup', JSON.stringify(keyboard));
     }
 
     const response = await this.fetchImpl(

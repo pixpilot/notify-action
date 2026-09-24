@@ -21,6 +21,8 @@ export interface NotificationPayload {
   fields: NotificationField[];
   /** Link to the workflow run. */
   runUrl: string;
+  /** Link to the repository's Actions tab. */
+  actionsUrl: string;
   /** Optional extra text supplied by the caller. */
   message?: string;
 }
