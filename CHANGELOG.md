@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/pixpilot/notify-action/compare/v1.1.1...v1.2.0) (2026-09-24)
+
+
+### Features
+
+* **notify:** update notification behavior and add inline keyboard support ([bf10e7e](https://github.com/pixpilot/notify-action/commit/bf10e7e1c3fb9e63786fa877e9c4c95fea7dc6a4))
+
 ## [1.1.1](https://github.com/pixpilot/notify-action/compare/v1.1.0...v1.1.1) (2026-09-23)
 
 
